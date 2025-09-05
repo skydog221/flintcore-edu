@@ -7,7 +7,7 @@ import {
   ScrollRestoration,
 } from "react-router";
 import React from "react";
-import { Menu, ConfigProvider } from "antd";
+import { Menu, ConfigProvider, Space } from "antd";
 import { Layout as Layoutantd } from "antd";
 const { Header, Content, Footer } = Layoutantd;
 const items = [
@@ -53,7 +53,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         >
           <Layoutantd style={{ minHeight: "100vh" }}>
             <Header
-              style={{ display: "flex", alignItems: "center", color: "white" }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                color: "white",
+              }}
             >
               <div className="demo-logo">
                 <img

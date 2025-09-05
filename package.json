@@ -4,8 +4,12 @@
   "type": "module",
   "scripts": {
     "build": "react-router build",
-    "dev": "react-router dev",
-    "start": "react-router-serve ./build/server/index.js",
+    "dev": "concurrently \"bun backend:dev\" \"bun frontend:dev\"",
+    "frontend:dev": "react-router dev",
+    "backend:dev": "cd backend && bun dev",
+    "start": "concurrently \"bun backend:start\" \"bun frontend:start\"",
+    "frontend:start": "react-router-serve ./build/server/index.js",
+    "backend:start": "cd backend && bun start",
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
@@ -26,6 +30,7 @@
     "@types/node": "^24.3.1",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "concurrently": "^9.2.1",
     "tailwindcss": "^4.1.4",
     "typescript": "^5.8.3",
     "vite": "^6.3.3",
