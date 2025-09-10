@@ -2,7 +2,7 @@
 
 <p align="center">
   <p align="center">
-    一个高性能、多功能的教程分享系统
+    新一代高性能、多功能的教程分享系统
     <br />
     <a href="https://github.com/skydog221/flintcore-edu"><strong>探索本项目的文档 »</strong></a>
     <br />

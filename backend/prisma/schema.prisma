@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+
+model SiteConfig {
+  id       Int        @id @unique @default(autoincrement())
+  carousel Json       @default("[{\"id\": 1, \"url\": \"https://tc.z.wiki/autoupload/f/rOLgk6AZNCN0b5f4pqrSUiNUZen7pcKcfP-lKvzzVj2yl5f0KlZfm6UsKj-HyTuv/20250905/ge3Z/294X165/cropped-image.png/webp\"}, {\"id\": 2, \"url\": \"https://tc-new.z.wiki/autoupload/f/rOLgk6AZNCN0b5f4pqrSUiNUZen7pcKcfP-lKvzzVj2yl5f0KlZfm6UsKj-HyTuv/20250905/UaRO/279X157/cropped-image_%281%29.png/webp\"}, {\"id\": 3, \"url\": \"https://tc-new.z.wiki/autoupload/f/rOLgk6AZNCN0b5f4pqrSUiNUZen7pcKcfP-lKvzzVj2yl5f0KlZfm6UsKj-HyTuv/20250905/C5s3/270X152/cropped-image_%282%29.png/webp\"}, {\"id\": 4, \"url\": \"https://tc-new.z.wiki/autoupload/f/rOLgk6AZNCN0b5f4pqrSUiNUZen7pcKcfP-lKvzzVj2yl5f0KlZfm6UsKj-HyTuv/20250905/VvCW/268X151/cropped-image_%283%29.png/webp\"}]")
+}
+
+model Article {
+  uuid      String   @id @default(uuid()) @unique
+  description String @default("")
+  title    String
+  cover    String    @default("https://tc-new.z.wiki/autoupload/f/rOLgk6AZNCN0b5f4pqrSUiNUZen7pcKcfP-lKvzzVj2yl5f0KlZfm6UsKj-HyTuv/20250909/Elro/965X535/%E7%BC%96%E7%A8%8B_%E5%B0%91%E5%B9%B4.jpg/webp")
+  content  String
+  author   String   
+  date DateTime @default(now())
+  readCount Int     @default(0)
+  comments Json[]
+  likes    Int     @default(0)
+  subArticles Article[] @relation("ArticleSubArticles")
+  parentArticle Article? @relation("ArticleSubArticles", fields: [parentArticleId], references: [uuid])
+  parentArticleId String?
+
+
+}
