@@ -1,7 +1,7 @@
 import React, { useState, useEffect, use } from "react";
 import { theme, Carousel } from "antd";
 import { CarouselC } from "./carousel/CarouselC";
-import { AritcleList } from "./articleList/AritcleList";
+import { AritcleList } from "../../components/articleList/AritcleList";
 
 const App: React.FC = () => {
   const [articles, setArticles] = useState<string[]>([]);
