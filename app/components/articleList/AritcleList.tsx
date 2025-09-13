@@ -1,4 +1,4 @@
-import React, { useEffect, useState, type ReactNode } from "react";
+import React, { useEffect, useState, useRef, type ReactNode } from "react";
 import { Card, Space } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { useWindowSize } from "../../hooks/useWindowSize";
@@ -12,6 +12,9 @@ export const AritcleList = (props: AritcleListProps) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchEndX, setTouchEndX] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const changePageSpeed = 220;
+  const cardsContainerRef = useRef<HTMLDivElement>(null);
   const cardHeight = 300;
   const cardWidth = 300;
   const cardGap = 16;
@@ -129,17 +132,61 @@ export const AritcleList = (props: AritcleListProps) => {
     return cards;
   };
 
+  const renderCardsForPage = (pageIndex: number) => {
+    const cards: React.ReactNode[] = [];
+    const startIndex = pageIndex * maxVisibleCards;
+    const endIndex = startIndex + maxVisibleCards;
+
+    const visibleArticles = articles.slice(startIndex, endIndex);
+    visibleArticles.forEach((article: any) => {
+      cards.push(
+        <Card
+          key={article.uuid}
+          style={{ width: 300, flexShrink: 0 }}
+          cover={<img alt="cover" src={article.cover} />}
+        >
+          <Card.Meta title={article.title} description={article.description} />
+        </Card>
+      );
+    });
+
+    const visibleLoadingStates = loadingStates.slice(startIndex, endIndex);
+    visibleLoadingStates.forEach((isLoading, index) => {
+      if (isLoading) {
+        cards.push(
+          <Card
+            key={`loading-${startIndex + index}`}
+            style={{ width: 300, flexShrink: 0 }}
+            loading={true}
+          />
+        );
+      }
+    });
+
+    return cards;
+  };
+
   const handlePrev = () => {
-    if (currentPage > 0) {
+    if (currentPage > 0 && !isAnimating) {
+      setIsAnimating(true);
       setCurrentPage(currentPage - 1);
+      // 使用requestAnimationFrame来确保动画更平滑
+      requestAnimationFrame(() => {
+        setTimeout(() => setIsAnimating(false), changePageSpeed);
+      });
     }
   };
 
   const handleNext = () => {
     const totalCards = articles.length + loadingStates.filter(Boolean).length;
     const maxPage = Math.ceil(totalCards / maxVisibleCards) - 1;
-    if (currentPage < maxPage) {
+    if (currentPage < maxPage && !isAnimating) {
+      setIsAnimating(true);
       setCurrentPage(currentPage + 1);
+      // 使用requestAnimationFrame来确保动画更平滑
+      requestAnimationFrame(() => {
+        setTimeout(() => setIsAnimating(false), changePageSpeed);
+      });
     }
   };
 
@@ -156,15 +203,23 @@ export const AritcleList = (props: AritcleListProps) => {
   };
 
   const handleTouchEnd = () => {
-    if (totalPages <= 1) return;
+    if (totalPages <= 1 || isAnimating) return;
 
     const swipeThreshold = 50;
     const diff = touchStartX - touchEndX;
 
     if (diff > swipeThreshold && currentPage < totalPages - 1) {
+      setIsAnimating(true);
       setCurrentPage(currentPage + 1);
+      requestAnimationFrame(() => {
+        setTimeout(() => setIsAnimating(false), changePageSpeed);
+      });
     } else if (diff < -swipeThreshold && currentPage > 0) {
+      setIsAnimating(true);
       setCurrentPage(currentPage - 1);
+      requestAnimationFrame(() => {
+        setTimeout(() => setIsAnimating(false), changePageSpeed);
+      });
     }
   };
 
@@ -198,8 +253,9 @@ export const AritcleList = (props: AritcleListProps) => {
               top: "50%", // 调整到一行卡片高度的中心点
               transform: "translateY(-50%)",
               zIndex: 1,
-              cursor: currentPage > 0 ? "pointer" : "not-allowed",
-              opacity: currentPage > 0 ? 1 : 0.5,
+              cursor:
+                currentPage > 0 && !isAnimating ? "pointer" : "not-allowed",
+              opacity: currentPage > 0 && !isAnimating ? 1 : 0.5,
               backgroundColor: "rgba(255, 255, 255, 0.8)",
               borderRadius: "50%",
               width: "32px",
@@ -216,17 +272,46 @@ export const AritcleList = (props: AritcleListProps) => {
         )}
         <div
           style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            gap: `${cardGap}px`,
-            maxWidth: "100%",
-            maxHeight: `${cardHeight}px`,
+            position: "relative",
+            width: "100%",
+            height: `${cardHeight}px`,
             overflow: "hidden",
-            boxSizing: "border-box",
           }}
         >
-          {renderCards()}
+          <div
+            ref={cardsContainerRef}
+            style={{
+              display: "flex",
+              flexWrap: "nowrap",
+              position: "absolute",
+              left: 0,
+              top: 0,
+              width: `${totalPages * 100}%`,
+              height: "100%",
+              transform: `translateX(${-currentPage * (100 / totalPages)}%)`,
+              transition: isAnimating
+                ? "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                : "none",
+            }}
+          >
+            {Array.from({ length: totalPages }, (_, pageIndex) => (
+              <div
+                key={pageIndex}
+                style={{
+                  width: `${100 / totalPages}%`,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                  gap: `${cardGap}px`,
+                  alignItems: "flex-start",
+                  boxSizing: "border-box",
+                  padding: "0 8px",
+                }}
+              >
+                {renderCardsForPage(pageIndex)}
+              </div>
+            ))}
+          </div>
         </div>
         {totalPages > 1 && (
           <div
@@ -236,8 +321,11 @@ export const AritcleList = (props: AritcleListProps) => {
               top: "50%",
               transform: "translateY(-50%)",
               zIndex: 1,
-              cursor: currentPage < totalPages - 1 ? "pointer" : "not-allowed",
-              opacity: currentPage < totalPages - 1 ? 1 : 0.5,
+              cursor:
+                currentPage < totalPages - 1 && !isAnimating
+                  ? "pointer"
+                  : "not-allowed",
+              opacity: currentPage < totalPages - 1 && !isAnimating ? 1 : 0.5,
               backgroundColor: "rgba(255, 255, 255, 0.8)",
               borderRadius: "50%",
               width: "32px",

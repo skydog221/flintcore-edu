@@ -16,8 +16,8 @@ const { Header, Content, Footer } = Layoutantd;
 const items = [
   { key: "home", label: "首页" },
   { key: "tutorial", label: "教程大厅" },
+  { key: "me", label: "创作中心" },
   { key: "forum", label: "星火论坛" },
-  { key: "theme", label: "主题展示" },
   { key: "about", label: "关于我们" },
 ];
 
@@ -46,8 +46,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       case "home":
         navigate("/");
         break;
-      case "theme":
-        navigate("/theme");
+      case "me":
+        navigate("/me");
         break;
       case "tutorial":
       case "forum":
