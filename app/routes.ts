@@ -4,4 +4,5 @@ export default [
   index("routes/home/home.tsx"),
   route("/theme", "routes/theme/theme.tsx"),
   route("/me", "routes/me/me.tsx"),
+  route("/callback", "routes/callback/callback.tsx"),
 ] satisfies RouteConfig;

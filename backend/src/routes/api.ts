@@ -32,11 +32,14 @@ apiRoutes.post("/home/carousel", async (c) => {
 apiRoutes.post("/article", async (c) => {
   try {
     const body = await c.req.json();
+
+    // 从数据库中获取文章
     const articleInfo = await prisma.article.findUnique({
       where: {
         uuid: body.uuid,
       },
     });
+
     if (!articleInfo) {
       return c.json(
         {
@@ -46,6 +49,7 @@ apiRoutes.post("/article", async (c) => {
         404
       );
     }
+
     return c.json({
       success: true,
       data: articleInfo,
@@ -57,6 +61,56 @@ apiRoutes.post("/article", async (c) => {
       {
         success: false,
         message: "获取文章信息失败: " + e.message,
+      },
+      500
+    );
+  }
+});
+
+// 获取用户文章列表
+apiRoutes.post("/user/article", async (c) => {
+  try {
+    const body = await c.req.json();
+    const page = body.page || 1;
+    const limit = body.limit || 5;
+
+    // 获取用户信息
+    const userInfo = await prisma.userInfo.findUnique({
+      where: {
+        // TODO：添加鉴权
+        uuid: body.uuid,
+      },
+    });
+    
+    if (!userInfo) {
+      return c.json(
+        {
+          success: false,
+          message: "用户不存在",
+        },
+        404
+      );
+    }
+    
+    const allArticleIds = userInfo.articles || [];
+
+    // 计算分页
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedArticleIds = allArticleIds.slice(startIndex, endIndex);
+
+    return c.json({
+      success: true,
+      data: paginatedArticleIds,
+      total: allArticleIds.length,
+      message: "获取文章列表成功",
+    });
+  } catch (e: any) {
+    console.error("获取用户文章列表失败:", e);
+    return c.json(
+      {
+        success: false,
+        message: "获取用户文章列表失败: " + e.message,
       },
       500
     );
@@ -84,6 +138,48 @@ apiRoutes.get("/articles", async (c) => {
       {
         success: false,
         message: "获取文章列表失败: " + e.message,
+      },
+      500
+    );
+  }
+});
+
+apiRoutes.post("/user/getinfo", async (c) => {
+  try {
+    const body = await c.req.json();
+    
+    // 从数据库中获取用户信息
+    const userInfo = await prisma.userInfo.findUnique({
+      where: {
+        uuid: body.uuid,
+      },
+      select: {
+        username: true,
+        avatar: true,
+      },
+    });
+
+    if (!userInfo) {
+      return c.json(
+        {
+          success: false,
+          message: "用户不存在",
+        },
+        404
+      );
+    }
+
+    return c.json({
+      success: true,
+      data: userInfo,
+      message: "获取用户信息成功",
+    });
+  } catch (e: any) {
+    console.error("获取用户信息失败:", e);
+    return c.json(
+      {
+        success: false,
+        message: "获取用户信息失败: " + e.message,
       },
       500
     );

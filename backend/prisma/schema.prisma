@@ -32,9 +32,29 @@ model Article {
   readCount Int     @default(0)
   comments Json[]
   likes    Int     @default(0)
-  subArticles Article[] @relation("ArticleSubArticles")
-  parentArticle Article? @relation("ArticleSubArticles", fields: [parentArticleId], references: [uuid])
+  subArticles Json?
+  
   parentArticleId String?
+
+
+}
+
+model UserInfo {
+  uuid String @id @default(uuid())
+  username String
+  email String @unique 
+  // 密码会在上传之前被hash，因此可以直接传输。
+  password String
+  articles String[]
+  /// 粉丝
+  flowers String[]
+  /// 关注的人
+  follows String[] 
+  ///用户角色
+  role String[] @default(["user"])
+  /// 头像
+  avatar String?
+
 
 
 }
